@@ -1,10 +1,10 @@
-from .main import CoreSettings, DEFAULT_VALUES
-from .conversion import convert_settings_overrides
+from .main import (
+    MaxSettings,
+    DEFAULT_VALUES,
+)
 
 
 __all__ = (
-    "CoreSettings",
+    "MaxSettings",
     "DEFAULT_VALUES",
-
-    "convert_settings_overrides",
 )
