@@ -7,6 +7,8 @@ from ayon_max.api import plugin
 from ayon_max.api.lib import read, imprint
 from pymxs import runtime as rt
 
+from ayon_max.api import pipeline
+
 
 class CreateWorkfile(plugin.MaxCreatorBase, AutoCreator):
     """Workfile auto-creator."""
@@ -114,6 +116,8 @@ class CreateWorkfile(plugin.MaxCreatorBase, AutoCreator):
         if rt.getNodeByName(product_name):
             node = rt.getNodeByName(product_name)
             return node
+        old_layer, new_layer = pipeline.create_container_saver_layer()
         node = rt.Container(name=product_name)
         node.isHidden = True
+        old_layer.current = True
         return node

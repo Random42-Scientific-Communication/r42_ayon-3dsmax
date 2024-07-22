@@ -51,6 +51,12 @@ class RenderSettings(object):
         setting = self._project_settings
         render_folder = get_default_render_folder(setting)
         filename, ext = os.path.splitext(file)
+        ''' ---------------------- R42 Input ----------------------------'''
+        ''' We remove the versioning in the temp files'''
+        import re
+        pattern = r"_v\d.*"
+        filename = re.sub(pattern, "", filename)
+        ''' ---------------------- R42 Input ----------------------------'''
         output_dir = os.path.join(folder,
                                   render_folder,
                                   filename)

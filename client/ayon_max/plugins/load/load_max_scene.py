@@ -132,11 +132,12 @@ class MaxSceneLoader(load.LoaderPlugin):
         namespace, _ = get_namespace(node_name)
         # delete the old container with attribute
         # delete old duplicate
-        # use the modifier OP data to delete the data
+        # use the modifier OP data (now AYON data) to delete the data
         node_list = get_previous_loaded_object(node)
         rt.select(node_list)
         prev_max_objects = rt.GetCurrentSelection()
         transform_data = object_transform_set(prev_max_objects)
+        layer_data = object_layer_set(prev_max_objects)
 
         for prev_max_obj in prev_max_objects:
             if rt.isValidNode(prev_max_obj):  # noqa
@@ -163,6 +164,14 @@ class MaxSceneLoader(load.LoaderPlugin):
                 max_obj.pos = transform_data[max_transform] or 0
                 max_obj.scale = transform_data[
                     f"{max_obj}.scale"] or 0
+            obj_is_hidden_key = f"{max_obj}.isHidden"
+            if obj_is_hidden_key in layer_data.keys():
+                max_obj.isHidden = layer_data[obj_is_hidden_key]
+                obj_parent_key = f"{max_obj}.parentLayer"
+                obj_frozen_key = f"{max_obj}.frozen"
+                parent_layer = layer_data[obj_parent_key]
+                parent_layer.addnode(max_obj)
+                max_obj.isfrozen = layer_data[obj_frozen_key]
 
         update_custom_attribute_data(node, max_objects)
         lib.imprint(container["instance_node"], {

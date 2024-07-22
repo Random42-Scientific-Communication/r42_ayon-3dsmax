@@ -1,4 +1,5 @@
 import os
+import re
 import pyblish.api
 from pymxs import runtime as rt
 from ayon_core.pipeline.publish import (
@@ -70,6 +71,7 @@ class ValidateRenderPasses(OptionalPyblishPluginMixin,
                 with the project name
         """
         invalid = []
+        '''
         file = rt.maxFileName
         workfile_name, ext = os.path.splitext(file)
         if workfile_name not in rt.rendOutputFilename:
@@ -82,6 +84,22 @@ class ValidateRenderPasses(OptionalPyblishPluginMixin,
                     "\\", "/").split("/")[-1]
             invalid.append(("Invalid Render Output Folder",
                             invalid_folder_name))
+        '''
+        expected_output_path = cls.generate_temp_output_path(instance)
+
+        cls.log.debug(f"expected output path is {expected_output_path}")
+
+        if expected_output_path not in rt.rendOutputFilename:
+            cls.log.error(
+                "Render output folder must include"
+                f" the max task name. Should be {expected_output_path} "
+            )
+            invalid_folder_name = os.path.dirname(
+                rt.rendOutputFilename).replace(
+                "\\", "/").split("/")[-1]
+            invalid.append(("Invalid Render Output Folder",
+                            invalid_folder_name))
+
         beauty_fname = os.path.basename(rt.rendOutputFilename)
         beauty_name, ext = os.path.splitext(beauty_fname)
         invalid_filenames = cls.get_invalid_filenames(
@@ -185,3 +203,28 @@ class ValidateRenderPasses(OptionalPyblishPluginMixin,
         RenderSettings().render_output(container)
         cls.log.debug("Finished repairing the render output "
                       "folder and filenames.")
+
+    @classmethod
+    def generate_temp_output_path(cls, instance):
+        folder = rt.maxFilePath
+
+        folder = folder.replace("\\", "/")
+        setting = instance.context.data["project_settings"].get("max")
+        cls.log.debug(setting)
+        render_folder = setting["RenderSettings"]["default_render_image_folder"]
+
+        ''' We remove the versioning in the temp files'''
+        file = rt.maxFileName
+        filename, ext = os.path.splitext(file)
+        pattern = r"_v\d.*"
+        filename = re.sub(pattern, "", filename)
+
+        output_dir = os.path.join(folder,
+                                  render_folder,
+                                  filename)
+
+        output_dir = os.path.normpath(output_dir)
+        output_dir += "\\"
+
+        cls.log.debug(f"output_dir is {output_dir}")
+        return output_dir

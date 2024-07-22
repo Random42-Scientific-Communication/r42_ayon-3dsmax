@@ -507,6 +507,27 @@ def object_transform_set(container_children):
     return transform_set
 
 
+def object_layer_set(container_children):
+    """A function which allows to store the layer information of
+    previous loaded object(s)
+    Args:
+        container_children(list): A list of nodes
+
+    Returns:
+        layer_set (dict): A dict with all layer data of
+        the previous loaded object(s)
+    """
+    layer_set = {}
+    for node in container_children:
+        name = f"{node.name}.isHidden"
+        layer_set[name] = node.isHidden
+        name = f"{node.name}.parentLayer"
+        layer_set[name] = node.layer
+        name = f"{node.name}.frozen"
+        layer_set[name] = node.isfrozen
+
+    return layer_set
+
 def get_plugins() -> list:
     """Get all loaded plugins in 3dsMax
 

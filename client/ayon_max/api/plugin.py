@@ -15,20 +15,27 @@ from ayon_core.pipeline import (
 )
 
 from .lib import imprint, lsattr, read
+from ayon_max.api import pipeline
 
-MS_CUSTOM_ATTRIB = """attributes "openPypeData"
+# --------------------------------
+from ayon_max.api import R42_ContainerUI_Addon
+
+R42_CONTAINER_UI_POPUP = R42_ContainerUI_Addon.R42_CONTAINER_UI_POPUP
+# --------------------------------
+
+MS_CUSTOM_ATTRIB = f"""attributes "openPypeData"
 (
-    parameters main rollout:OPparams
+    parameters main rollout:AYONparams
     (
         all_handles type:#maxObjectTab tabSize:0 tabSizeVariable:on
         sel_list type:#stringTab tabSize:0 tabSizeVariable:on
     )
 
-    rollout OPparams "OP Parameters"
+    rollout AYONparams "AYON Parameters"
     (
         listbox list_node "Node References" items:#()
         button button_add "Add to Container"
-        button button_del "Delete from Container"
+        -- button button_del "Delete from Container"
 
         fn node_to_name the_node =
         (
@@ -71,28 +78,11 @@ MS_CUSTOM_ATTRIB = """attributes "openPypeData"
 
         on button_add pressed do
         (
-            current_sel = selectByName title:"Select Objects to add to
-            the Container" buttontext:"Add" filter:nodes_to_add
-            if current_sel == undefined then return False
-            temp_arr = #()
-            i_node_arr = #()
-            for c in current_sel do
-            (
-                handle_name = node_to_name c
-                node_ref = NodeTransformMonitor node:c
-                idx = finditem list_node.items handle_name
-                if idx do (
-                    continue
-                )
-                name = c as string
-                append temp_arr handle_name
-                append i_node_arr node_ref
-                append sel_list name
-            )
-            all_handles = join i_node_arr all_handles
-            list_node.items = join temp_arr list_node.items
+            {R42_CONTAINER_UI_POPUP}
+            createDialog AyonContainerEdit modal:true
         )
 
+        /*
         on button_del pressed do
         (
             current_sel = selectByName title:"Select Objects to remove
@@ -137,8 +127,9 @@ MS_CUSTOM_ATTRIB = """attributes "openPypeData"
             all_handles = join i_node_arr new_i_node_arr
             list_node.items = join temp_arr new_temp_arr
         )
+        */
 
-        on OPparams open do
+        on AYONparams open do
         (
             if all_handles.count != 0 then
             (
@@ -191,14 +182,20 @@ class MaxCreatorBase(object):
         Returns:
             instance
         """
+        # Set to new layer
+        old_layer, new_layer = pipeline.create_container_saver_layer()
+
         if isinstance(node, str):
             node = rt.Container(name=node)
 
         attrs = rt.Execute(MS_CUSTOM_ATTRIB)
         modifier = rt.EmptyModifier()
         rt.addModifier(node, modifier)
-        node.modifiers[0].name = "OP Data"
+        node.modifiers[0].name = "AYON Data"
         rt.custAttributes.add(node.modifiers[0], attrs)
+
+        # Reset the layer back
+        old_layer.current = True
 
         return node
 
