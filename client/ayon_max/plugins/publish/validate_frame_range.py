@@ -65,6 +65,10 @@ class ValidateFrameRange(pyblish.api.InstancePlugin,
                 f"End frame ({inst_frame_end}) on instance does not match "
                 f"with the end frame ({frame_end_handle}) "
                 "from the folder attributes. ")
+        if (rt.rendTimeType != 3) and (instance.data["productType"] == "maxrender"):
+            errors.append(
+                f"Render output time not set to frame range."
+            )
 
         if errors:
             bullet_point_errors = "\n".join(
@@ -107,6 +111,7 @@ class ValidateFrameRange(pyblish.api.InstancePlugin,
         if instance.data["productType"] == "maxrender":
             rt.rendStart = frame_start_handle
             rt.rendEnd = frame_end_handle
+            rt.rendTimeType = 3
         else:
             set_timeline(frame_start_handle, frame_end_handle)
 
